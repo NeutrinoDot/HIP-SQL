@@ -1,16 +1,5 @@
 USE uwb_hip;
 
-INSERT hip_participation_data VALUES
-	('CBLR', 'BUS', 'B BUS', 307, 'A', 'Upper', '#N/A', 'Business Writing', 20203, 2020, 'Summer', 'Y', 'Faculty Name', 'Organization Name', 'Public Service', 'Project-Based', NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-    (NULL, NULL, 'CSS', 497, 'B', NULL, NULL, NULL, 20181, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Internship', NULL, NULL, NULL, NULL, NULL, NULL),
-    (NULL, NULL, 'B WRIT', 135, 'A', NULL, NULL, NULL, 20182, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Yes', NULL, NULL, NULL),
-    (NULL, NULL, 'BIS', 406, 'A', NULL, NULL, NULL, 20193, NULL, NULL, NULL, NULL, NULL, NULL, 'Project-Based', NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-    (NULL, NULL, 'FSTDY', 300, 'A', NULL, NULL, NULL, 20191, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Study Abroad', NULL, NULL, NULL, NULL, NULL)
-;
-SELECT * FROM hip_participation_data;
-
--- Inserts a list of all the HIP courses/sections
--- INSERT INTO hip_input
 
 INSERT hip_type_code VALUES
 	(0, 'N/A'),

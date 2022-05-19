@@ -1,36 +1,13 @@
 #Creates a set of tables that stores relevant student and course information related to HIP activities
-
-CREATE DATABASE uwb_hip;
+/*
 USE uwb_hip;
 
 -- duplicate of the input CSV
-CREATE TABLE hip_participation_data(
-	Reporting_Unit VARCHAR(25),
-	School_Unit VARCHAR(25),
-	Course_Prefix  VARCHAR(25),
-	Course_Number INT,
-	Section  VARCHAR(3),
-	Divison_of_Course_Level VARCHAR(10),
-	Combined_Course_Code VARCHAR(120),
-	CourseorProgramName VARCHAR(120),
-	AcademicQtrKeyId INT,
-	course_year INT,
-	course_quarter VARCHAR(25),
-	Unique_Count_of_Course VARCHAR(5),
-    Faculty VARCHAR(50),
-    Organizations VARCHAR(100),
-	Provost_Report_Activity_Type VARCHAR(50),
-	CBLR VARCHAR(120),
-	Internship VARCHAR(25),
-	GlobalLearning VARCHAR(25),
-	LearningCommunity VARCHAR(25),
-	UndergradResearch VARCHAR(25),
-	Capstone VARCHAR(25),
-	First_Year_Experience VARCHAR(25),
-	Notes  VARCHAR(120)
-);
-SELECT * FROM hip_participation_data;
 
+*/
+
+
+/*
 -- Links courses with all students who participated.
 CREATE TABLE hip_type_code (
 	hip_type INT,

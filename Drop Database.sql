@@ -1,4 +1,4 @@
-DROP DATABASE uw_sdb_datastore;
+# DROP DATABASE uw_sdb_datastore;
 
 DROP DATABASE enterprise_data_warehouse;
 
