@@ -1,73 +1,9 @@
 USE uwb_hip;
 
+CREATE TABLE student_alias (
 
-INSERT hip_type_code VALUES
-	(0, 'N/A'),
-	(1, 'CBLR'),
-    (2, 'Internship'),
-    (3, 'GlobalLearning'),
-    (4, 'LearningCommunity'),
-    (5, 'UndergradResearch'),
-    (6, 'Capstone')
-;
-SELECT * FROM hip_type_code;
+);
 
-INSERT INTO hip_input
-SELECT CurriculumCourseKeyId, Section, AcademicQtrKeyId, hip_type
-FROM
-	(SELECT Course_Prefix, Course_Number, Section, AcademicQtrKeyId, 1 AS hip_type
-	FROM hip_participation_data
-	WHERE CBLR IS NOT NULL AND CBLR <> 'N/A'
-	UNION ALL
-	SELECT Course_Prefix, Course_Number, Section, AcademicQtrKeyId, 2
-	FROM hip_participation_data
-	WHERE Internship IS NOT NULL AND Internship <> 'N/A'
-	UNION ALL
-	SELECT Course_Prefix, Course_Number, Section, AcademicQtrKeyId, 3
-	FROM hip_participation_data
-	WHERE GlobalLearning IS NOT NULL AND GlobalLearning <> 'N/A'
-	UNION ALL
-	SELECT Course_Prefix, Course_Number, Section, AcademicQtrKeyId, 4
-	FROM hip_participation_data
-	WHERE LearningCommunity IS NOT NULL AND LearningCommunity <> 'N/A'
-	UNION ALL
-	SELECT Course_Prefix, Course_Number, Section, AcademicQtrKeyId, 5
-	FROM hip_participation_data
-	WHERE UndergradResearch IS NOT NULL AND UndergradResearch <> 'N/A'
-	UNION ALL
-	SELECT Course_Prefix, Course_Number, Section, AcademicQtrKeyId, 6
-	FROM hip_participation_data
-	WHERE Capstone IS NOT NULL AND Capstone <> 'N/A') AS subquery_0
-INNER JOIN
-	(SELECT CurriculumCourseKeyId, CurriculumCode, CourseNbr
-    FROM enterprise_data_warehouse.dimCurriculumCourse) AS subquery_1
-ON subquery_0.course_prefix = subquery_1.CurriculumCode AND subquery_0.course_number = subquery_1.CourseNbr
-;
-SELECT * FROM hip_input;
-
--- fill student_participation table
-INSERT INTO student_participation
-SELECT student_courses.StudentKeyId, student_courses.CurriculumCourseKeyId, CourseLongName, CourseSectionId, student_courses.AcademicQtrKeyId, SCHQty,
-	CASE
-		WHEN hip_input.hip_type IS NOT NULL THEN hip_input.hip_type
-        ELSE student_courses.hip_type
-	END AS hip_type
-FROM
-	(SELECT StudentKeyId, course_quarter.CurriculumCourseKeyId, CourseLongName, CourseSectionId,  AcademicQtrKeyId, SCHQty, NULL AS hip_type
-	FROM enterprise_data_warehouse.dimCurriculumCourse
-	INNER JOIN
-		(SELECT StudentKeyId, CurriculumCourseKeyId, CourseSectionId,  AcademicQtrKeyId, SCHQty
-		FROM enterprise_data_warehouse.factStudentCreditHour
-		INNER JOIN
-			(SELECT CalendarDateKeyId, AcademicQtrKeyId
-			FROM enterprise_data_warehouse.dimDate) as date_table
-		ON enterprise_data_warehouse.factStudentCreditHour.CalendarDateKeyId = date_table.CalendarDateKeyId) AS course_quarter
-	ON enterprise_data_warehouse.dimCurriculumCourse.CurriculumCourseKeyId = course_quarter.CurriculumCourseKeyId) AS student_courses
-LEFT JOIN
-	hip_input
-ON hip_input.CurriculumCourseKeyId = student_courses.CurriculumCourseKeyId AND hip_input.course_section = student_courses.CourseSectionId AND hip_input.AcademicQtrKeyId = student_courses.AcademicQtrKeyId
-;
-SELECT * FROM student_participation;
 
 -- Creates a masked ID for every student in the UW system
 INSERT INTO student_alias (system_key, student_no)
@@ -150,30 +86,3 @@ INNER JOIN
 	ON student_id_link.system_key = uw_profiles_1.SDBSrcSystemKey) AS uw_profiles_2
 ON student_3.RandomId = uw_profiles_2.RandomId AND student_3.AcademicQtrKeyId= uw_profiles_2.AcademicQtrKeyId;
 SELECT * FROM student_profile;
-
-SELECT stu_profile.RandomId, student_no, stu_profile.AcademicQtrKeyId, MajorAbbrCode, MajorName, CurriculumCourseKeyId, CourseSectionId, CourseLongName, SCHQty, hip_type,  FirstGenerationMatriculated, FirstGeneration4YrDegree, AcademicCareerEntryType, Veteran, PellEligibilityStatus, StudentClassCode, GenderCode, ethnic_grp_id
-FROM
-	(SELECT RandomId, AcademicQtrKeyId, FirstGenerationMatriculated, FirstGeneration4YrDegree, AcademicCareerEntryType, Veteran, PellEligibilityStatus, StudentClassCode, GenderCode, ethnic_grp_id, MajorAbbrCode, MajorName
-    FROM student_profile
-    INNER JOIN
-		enterprise_data_warehouse.dimMajor
-    ON enterprise_data_warehouse.dimMajor.MajorKeyId = student_profile.MajorKeyId) AS stu_profile
-INNER JOIN
-	(SELECT RandomId, student_no, AcademicQtrKeyId, CurriculumCourseKeyId, CourseSectionId, CourseLongName, SCHQty, hip_type
-    FROM student_participation
-    INNER JOIN
-		(SELECT student_alias.RandomId, StudentKeyId, student_no
-        FROM student_alias
-        INNER JOIN
-			student_id_link
-        ON student_alias.RandomId = student_id_link.RandomId) AS student_id
-	ON student_id.StudentKeyId = student_participation.StudentKeyId) AS student_course
-ON stu_profile.RandomId = student_course.RandomId AND stu_profile.AcademicQtrKeyId = student_course.AcademicQtrKeyId;
-
-/*
-
-
-
-
-
-*/

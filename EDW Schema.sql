@@ -1,6 +1,7 @@
 # Creates a mock version of the EDW to test new queries.
 CREATE DATABASE enterprise_data_warehouse;
 USE enterprise_data_warehouse;
+SET SESSION sql_mode = "";
 
 -- Create dimCurriculumCourse table
 CREATE TABLE dimCurriculumCourse (
@@ -15,9 +16,10 @@ CREATE TABLE dimCurriculumCourse (
 );
 # Insert values into dimCurriculumCourse table from CSV
 LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/DimCurriculumCourse_20173_20212.csv'
+IGNORE
 INTO TABLE dimCurriculumCourse
 FIELDS TERMINATED BY ','
-ENCLOSED BY '"'
+OPTIONALLY ENCLOSED BY '"'
 LINES TERMINATED BY '\n';
 SELECT * from dimCurriculumCourse;
 
@@ -32,9 +34,10 @@ CREATE TABLE factStudentCreditHour (
 );
 -- Insert values into factStudentCreditHour table from CSV
 LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/FactStudentCreditHour_20173_20212.csv'
+IGNORE
 INTO TABLE factStudentCreditHour
 FIELDS TERMINATED BY ','
-ENCLOSED BY '"'
+OPTIONALLY ENCLOSED BY '"'
 LINES TERMINATED BY '\n';
 SELECT * from factStudentCreditHour;
 
@@ -52,9 +55,10 @@ CREATE TABLE dimDate (
 );
 -- Insert values into dimDate table from CSV
 LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/DimDate_20173_20212.csv'
+IGNORE
 INTO TABLE dimDate
 FIELDS TERMINATED BY ','
-ENCLOSED BY '"'
+OPTIONALLY ENCLOSED BY '"'
 LINES TERMINATED BY '\n';
 SELECT * from dimDate;
 
@@ -72,9 +76,10 @@ CREATE TABLE UWProfilesStudent (
 );
 -- Insert values into UWProfilesStudent table from CSV
 LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/UWProfilesStudent_20173_20212.csv'
+IGNORE
 INTO TABLE UWProfilesStudent
 FIELDS TERMINATED BY ','
-ENCLOSED BY '"'
+OPTIONALLY ENCLOSED BY '"'
 LINES TERMINATED BY '\n';
 SELECT * from UWProfilesStudent;
 
@@ -100,9 +105,10 @@ CREATE TABLE dimStudent (
 );
 -- Insert values into dimStudent table from CSV
 LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/DimStudent_20173_20212.csv'
+IGNORE
 INTO TABLE dimStudent
 FIELDS TERMINATED BY ','
-ENCLOSED BY '"'
+OPTIONALLY ENCLOSED BY '"'
 LINES TERMINATED BY '\n';
 SELECT * FROM dimstudent;
 
@@ -117,9 +123,10 @@ CREATE TABLE factStudentProgramEnrollment (
 );
 -- Insert values into factStudentProgramEnrollment table from CSV
 LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/FactStudentProgramEnrollment_20173_20212.csv'
+IGNORE
 INTO TABLE factStudentProgramEnrollment
 FIELDS TERMINATED BY ','
-ENCLOSED BY '"'
+OPTIONALLY ENCLOSED BY '"'
 LINES TERMINATED BY '\n';
 SELECT * FROM factStudentProgramEnrollment;
 
@@ -137,8 +144,9 @@ CREATE TABLE dimMajor (
 );
 -- Insert values into dimMajor table from CSV
 LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/DimMajor_20173_20212.csv'
+IGNORE
 INTO TABLE dimMajor
 FIELDS TERMINATED BY ','
-ENCLOSED BY '"'
+OPTIONALLY ENCLOSED BY '"'
 LINES TERMINATED BY '\n';
 SELECT * from dimMajor;

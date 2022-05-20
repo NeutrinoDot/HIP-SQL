@@ -12,11 +12,12 @@ CREATE TABLE student_1 (
 
 # Load table from CSV
 LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/Student_1_20173_20212.csv'
+IGNORE
 INTO TABLE student_1
 FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n';
 
-DELETE FROM student_1 WHERE student_no = 0; # Need to student_no = 0 are students who never enrolled at UW
+DELETE FROM student_1 WHERE student_no = 0; # Need to delete. student_no = 0 are students who never enrolled at UW
 
 SELECT * FROM student_1
 ORDER BY student_no;
