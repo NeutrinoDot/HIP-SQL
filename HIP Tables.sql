@@ -18,6 +18,8 @@ CREATE TABLE hip_input(
 );
 #SELECT * FROM hip_input;
 
+SELECT * FROM hip_input WHERE CurriculumCode = "B HLTH";
+
 -- Insert values into hip_participation_data table from CSV
 LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/ALL UNITS 2020-2021 HIPs Participation Data 12-6-2021.csv'
 IGNORE
@@ -238,4 +240,4 @@ SELECT student_no, RandomId, student_participation.AcademicQtrKeyId, FirstGenera
 FROM student_participation
 INNER JOIN student_profile
 ON student_participation.StudentKeyId = student_profile.StudentKeyId AND student_participation.AcademicQtrKeyId = student_profile.AcademicQtrKeyId;
-SELECT * FROM output;
+#SELECT * FROM output;

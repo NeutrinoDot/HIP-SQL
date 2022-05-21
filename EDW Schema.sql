@@ -1,4 +1,5 @@
 # Creates a mock version of the EDW to test new queries.
+
 CREATE DATABASE enterprise_data_warehouse;
 USE enterprise_data_warehouse;
 SET SESSION sql_mode = "";

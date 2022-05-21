@@ -21,3 +21,5 @@ DELETE FROM student_1 WHERE student_no = 0; # Need to delete. student_no = 0 are
 
 SELECT * FROM student_1
 ORDER BY student_no;
+
+SELECT * FROM student_1 WHERE student_no = 1770048;
