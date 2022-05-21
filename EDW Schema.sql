@@ -21,7 +21,7 @@ INTO TABLE dimCurriculumCourse
 FIELDS TERMINATED BY ','
 OPTIONALLY ENCLOSED BY '"'
 LINES TERMINATED BY '\n';
-SELECT * from dimCurriculumCourse;
+#SELECT * from dimCurriculumCourse;
 
 
 -- Create factStudentCreditHour table
@@ -39,7 +39,7 @@ INTO TABLE factStudentCreditHour
 FIELDS TERMINATED BY ','
 OPTIONALLY ENCLOSED BY '"'
 LINES TERMINATED BY '\n';
-SELECT * from factStudentCreditHour;
+#SELECT * from factStudentCreditHour;
 
 
 -- Create dimDate table
@@ -60,7 +60,7 @@ INTO TABLE dimDate
 FIELDS TERMINATED BY ','
 OPTIONALLY ENCLOSED BY '"'
 LINES TERMINATED BY '\n';
-SELECT * from dimDate;
+#SELECT * from dimDate;
 
 
 -- Create UWProfilesStudent table
@@ -81,7 +81,7 @@ INTO TABLE UWProfilesStudent
 FIELDS TERMINATED BY ','
 OPTIONALLY ENCLOSED BY '"'
 LINES TERMINATED BY '\n';
-SELECT * from UWProfilesStudent;
+#SELECT * from UWProfilesStudent;
 
 
 -- Create dimStudent table
@@ -110,7 +110,7 @@ INTO TABLE dimStudent
 FIELDS TERMINATED BY ','
 OPTIONALLY ENCLOSED BY '"'
 LINES TERMINATED BY '\n';
-SELECT * FROM dimstudent;
+#SELECT * FROM dimstudent;
 
 
 -- Create factStudentProgramEnrollment table
@@ -128,7 +128,7 @@ INTO TABLE factStudentProgramEnrollment
 FIELDS TERMINATED BY ','
 OPTIONALLY ENCLOSED BY '"'
 LINES TERMINATED BY '\n';
-SELECT * FROM factStudentProgramEnrollment;
+#SELECT * FROM factStudentProgramEnrollment;
 
 
 -- Create dimMajor table
@@ -149,4 +149,4 @@ INTO TABLE dimMajor
 FIELDS TERMINATED BY ','
 OPTIONALLY ENCLOSED BY '"'
 LINES TERMINATED BY '\n';
-SELECT * from dimMajor;
+#SELECT * from dimMajor;

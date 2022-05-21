@@ -1,88 +1,72 @@
 USE uwb_hip;
 
-CREATE TABLE student_alias (
-
-);
-
-
--- Creates a masked ID for every student in the UW system
-INSERT INTO student_alias (system_key, student_no)
-SELECT system_key, student_no
-FROM uw_sdb_datastore.student_1
-;
-SELECT * FROM student_alias;
-
--- Fill student_id_link
-INSERT INTO student_id_link
-SELECT RandomId, system_key, StudentKeyId
-FROM student_alias
-INNER JOIN
-	(SELECT StudentKeyId, SDBSrcSystemKey
-	FROM enterprise_data_warehouse.dimStudent) AS subquery_1
-ON subquery_1.SDBSrcSystemKey = system_key
-;
-SELECT * FROM student_id_link;
 
 -- student_demographic
-INSERT INTO student_profile
-SELECT student_3.RandomId, student_3.AcademicQtrKeyId, FirstGenInd, FirstGen4YearInd, AcademicOriginType, Veteran, PellEligibilityStatus, StudentClassCode, GenderCode, ethnic_grp_id, MajorKeyId
-FROM
-	(SELECT RandomId, AcademicQtrKeyId, MajorKeyId, StudentClassCode, GenderCode, ethnic_grp_id
-	FROM student_id_link
-	INNER JOIN
-		(SELECT student.StudentKeyId, AcademicQtrKeyId, MajorKeyId, StudentClassCode, GenderCode, ethnic_grp_id
+#INSERT INTO student_profile
+SELECT RandomId, StudentKeyId, student_no, AcademicQtrKeyId,  FirstGenInd, FirstGen4YearInd, AcademicOriginType, Veteran, PellEligibilityStatus, StudentClassDesc, GenderCode, RaceEthnicityCategory, MajorFullName, MajorAbbrCode
+FROM uwb_hip.student_alias
+INNER JOIN
+	(SELECT student.SDBSrcSystemKey, student.AcademicQtrKeyId, StudentKeyId, FirstGenInd, FirstGen4YearInd, AcademicOriginType, Veteran, PellEligibilityStatus, StudentClassDesc, GenderCode, RaceEthnicityCategory, MajorFullName, MajorAbbrCode
+	FROM
+		(SELECT SDBSrcSystemKey, student_major.StudentKeyId, AcademicQtrKeyId, MajorFullName, MajorAbbrCode, StudentClassDesc, GenderCode, RaceEthnicityCategory
 		FROM
-			(SELECT StudentKeyId, StudentClassCode, GenderCode, 1 AS ethnic_grp_id
+			(SELECT StudentKeyId, SDBSrcSystemKey, GenderCode,  StudentClassDesc, "Hispanic" AS RaceEthnicityCategory
 			FROM enterprise_data_warehouse.dimStudent
-			WHERE HispanicInd = 'Y'
+			WHERE HispanicInd = 'Y' AND EthnicGrpMultipleInd <> 'Y'
 			UNION ALL
-			SELECT StudentKeyId, StudentClassCode, GenderCode, 2
+			SELECT StudentKeyId, SDBSrcSystemKey, GenderCode,  StudentClassDesc, "African American"
 			FROM enterprise_data_warehouse.dimStudent
-			WHERE EthnicGrpAfricanAmerInd = 'Y'
+			WHERE EthnicGrpAfricanAmerInd = 'Y' AND EthnicGrpMultipleInd <> 'Y'
 			UNION ALL
-			SELECT StudentKeyId, StudentClassCode, GenderCode, 3
+			SELECT StudentKeyId, SDBSrcSystemKey, GenderCode,  StudentClassDesc, "American Indian"
 			FROM enterprise_data_warehouse.dimStudent
-			WHERE EthnicGrpAmerIndianInd = 'Y'
+			WHERE EthnicGrpAmerIndianInd = 'Y' AND EthnicGrpMultipleInd <> 'Y'
 			UNION ALL
-			SELECT StudentKeyId, StudentClassCode, GenderCode, 4
+			SELECT StudentKeyId, SDBSrcSystemKey, GenderCode,  StudentClassDesc, "Asian"
 			FROM enterprise_data_warehouse.dimStudent
-			WHERE EthnicGrpAsianInd = 'Y'
+			WHERE EthnicGrpAsianInd = 'Y' AND EthnicGrpMultipleInd <> 'Y'
 			UNION ALL
-			SELECT StudentKeyId, StudentClassCode, GenderCode, 5
+			SELECT StudentKeyId, SDBSrcSystemKey, GenderCode,  StudentClassDesc, "Caucasian"
 			FROM enterprise_data_warehouse.dimStudent
-			WHERE EthnicGrpCaucasianInd = 'Y'
+			WHERE EthnicGrpCaucasianInd = 'Y' AND EthnicGrpMultipleInd <> 'Y'
 			UNION ALL
-			SELECT StudentKeyId, StudentClassCode, GenderCode, 6
+			SELECT StudentKeyId, SDBSrcSystemKey, GenderCode,  StudentClassDesc, "Hawaiian/Pacific Islander"
 			FROM enterprise_data_warehouse.dimStudent
-			WHERE EthnicGrpHawaiiPacIslanderInd = 'Y'
+			WHERE EthnicGrpHawaiiPacIslanderInd = 'Y' AND EthnicGrpMultipleInd <> 'Y'
 			UNION ALL
-			SELECT StudentKeyId, StudentClassCode, GenderCode, 7
+			SELECT StudentKeyId, SDBSrcSystemKey, GenderCode,  StudentClassDesc, "Multiple"
 			FROM enterprise_data_warehouse.dimStudent
-			WHERE EthnicGrpNotIndicatedInd = 'Y') AS student
+			WHERE EthnicGrpMultipleInd = 'Y'
+			UNION ALL
+			SELECT StudentKeyId, SDBSrcSystemKey, GenderCode,  StudentClassDesc, "Other"
+			FROM enterprise_data_warehouse.dimStudent
+			WHERE EthnicGrpNotIndicatedInd = 'Y' AND EthnicGrpMultipleInd <> 'Y') AS student
 		INNER JOIN
-			(SELECT StudentKeyId, AcademicQtrKeyId, MajorKeyId
-			FROM enterprise_data_warehouse.dimDate
-			INNER JOIN
-				-- Join hip_course_student with student_id_link
-				(SELECT StudentKeyId, major.MajorKeyId, CalendarDateKeyId
+			(SELECT StudentKeyId, AcademicQtrKeyId, MajorFullName, MajorAbbrCode
+			FROM
+				(SELECT DISTINCT StudentKeyId, enterprise_data_warehouse.factStudentProgramEnrollment.MajorKeyId, date_table.AcademicQtrKeyId
 				FROM enterprise_data_warehouse.factStudentProgramEnrollment
 				INNER JOIN
-					(SELECT MajorKeyId, MajorAbbrCode, MajorName
-					FROM enterprise_data_warehouse.dimMajor) AS major
-				ON enterprise_data_warehouse.factStudentProgramEnrollment.MajorKeyId = major.MajorKeyId) AS student_major
-			ON enterprise_data_warehouse.dimDate.CalendarDateKeyId = student_major.CalendarDateKeyId) AS student_1
-		ON student.StudentKeyId = student_1.StudentKeyId) AS student_2
-	ON  student_2.StudentKeyId = student_id_link.StudentKeyId) AS student_3
-INNER JOIN
-	(SELECT RandomId, AcademicQtrKeyId, FirstGenInd, FirstGen4YearInd, AcademicOriginType, Veteran, PellEligibilityStatus
-	FROM student_id_link
+					(SELECT CalendarDateKeyId, AcademicQtrKeyId
+					FROM enterprise_data_warehouse.dimDate
+					WHERE enterprise_data_warehouse.dimDate.AcademicQtrCensusDayInd = 'Y') AS date_table
+				ON date_table.CalendarDateKeyId = enterprise_data_warehouse.factStudentProgramEnrollment.CalendarDateKeyId) AS student_major_quarter
+			INNER JOIN
+				(SELECT MajorKeyId, MajorAbbrCode, MajorFullName
+				FROM enterprise_data_warehouse.dimMajor) AS major
+			ON student_major_quarter.MajorKeyId = major.MajorKeyId) AS student_major
+		ON student_major.StudentKeyId = student.StudentKeyId) AS student
 	INNER JOIN
-		(SELECT SDBSrcSystemKey, dimDate.AcademicQtrKeyId, FirstGenInd, FirstGen4YearInd, AcademicOriginType, Veteran, PellEligibilityStatus
-		FROM enterprise_data_warehouse.dimDate
-		INNER JOIN
-			(SELECT SDBSrcSystemKey, CalendarDate, FirstGenInd, FirstGen4YearInd, AcademicOriginType, Veteran, PellEligibilityStatus
-			FROM enterprise_data_warehouse.UWProfilesStudent) AS uw_profiles
-		ON dimDate.CalendarDate = uw_profiles.CalendarDate) AS uw_profiles_1
-	ON student_id_link.system_key = uw_profiles_1.SDBSrcSystemKey) AS uw_profiles_2
-ON student_3.RandomId = uw_profiles_2.RandomId AND student_3.AcademicQtrKeyId= uw_profiles_2.AcademicQtrKeyId;
+			(SELECT SDBSrcSystemKey, AcademicQtrKeyId, FirstGenInd, FirstGen4YearInd, AcademicOriginType, Veteran, PellEligibilityStatus
+			FROM
+				(SELECT CalendarDate, AcademicQtrKeyId
+				FROM enterprise_data_warehouse.dimDate
+				WHERE enterprise_data_warehouse.dimDate.AcademicQtrCensusDayInd = 'Y') AS date_table2
+			INNER JOIN
+				(SELECT SDBSrcSystemKey, CalendarDate, FirstGenInd, FirstGen4YearInd, AcademicOriginType, Veteran, PellEligibilityStatus
+				FROM enterprise_data_warehouse.UWProfilesStudent) AS uw_profiles
+			ON date_table2.CalendarDate = uw_profiles.CalendarDate) AS uw_student
+	ON student.SDBSrcSystemKey = uw_student.SDBSrcSystemKey AND student.AcademicQtrKeyId = uw_student.AcademicQtrKeyId) AS student_info
+ON uwb_hip.student_alias.system_key = student_info.SDBSrcSystemKey
+;
 SELECT * FROM student_profile;
