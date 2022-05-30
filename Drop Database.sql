@@ -4,7 +4,7 @@
 
 #DROP DATABASE enterprise_data_warehouse;
 
-#DROP DATABASE uwb_hip;
+DROP DATABASE uwb_hip;
 
 #DROP DATABASE input;
 

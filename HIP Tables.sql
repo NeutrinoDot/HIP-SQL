@@ -47,16 +47,20 @@ CREATE TABLE student_participation (
     AcademicQtrKeyId INT,
     AcademicYrName VARCHAR(50),
     SCHQty DECIMAL(3, 1),
-	TypeOfParticipation VARCHAR(200) DEFAULT NULL
+	CBLR VARCHAR(120), #from hip_participation_data
+	Internship VARCHAR(25), #from hip_participation_data
+	GlobalLearning VARCHAR(25), #from hip_participation_data
+	LearningCommunity VARCHAR(25), #from hip_participation_data
+	UndergradResearch VARCHAR(25) #from hip_participation_data
 );
 #SELECT * FROM student_participation;
 
 
 -- fill student_participation table
 INSERT INTO student_participation
-SELECT  StudentKeyId, CurriculumCourseKeyId, CourseLongName, all_courses.CourseSectionId, CourseorProgramName, all_courses.AcademicQtrKeyId, AcademicYrName, SCHQty,  CASE WHEN hip_courses.TypeOfParticipationX IS NOT NULL THEN hip_courses.TypeOfParticipationX ELSE "" END AS TypeOfParticipation
+SELECT  StudentKeyId, CurriculumCourseKeyId, CourseLongName, all_courses.CourseSectionId, CourseorProgramName, all_courses.AcademicQtrKeyId, AcademicYrName, SCHQty, CBLR,	Internship, GlobalLearning, LearningCommunity, UndergradResearch
 FROM
-	(SELECT CurrCourse.CurriculumCourseKeyId, CurriculumCode, CourseNbr, CourseLongName, StudentKeyId, CourseSectionId, SCHQty, AcademicQtrKeyId, AcademicYrName, NULL AS TypeOfParticipation 
+	(SELECT CurrCourse.CurriculumCourseKeyId, CurriculumCode, CourseNbr, CourseLongName, StudentKeyId, CourseSectionId, SCHQty, AcademicQtrKeyId, AcademicYrName
 	FROM 
 		(SELECT CurriculumCourseKeyId, CurriculumCode, CourseNbr, CourseLongName
 		FROM enterprise_data_warehouse.dimCurriculumCourse) as CurrCourse
@@ -69,43 +73,8 @@ FROM
 			WHERE AcademicQtrCensusDayInd = 'Y') AS date_query
 		ON enterprise_data_warehouse.factStudentCreditHour.CalendarDateKeyId = date_query.CalendarDateKeyId) AS date_student
 	ON CurrCourse.CurriculumCourseKeyId = date_student.CurriculumCourseKeyId) AS all_courses
-INNER JOIN #Change to LEFT JOIN to include all courses
-	(SELECT CurriculumCode, CourseNbr, CourseSectionId, CourseorProgramName, AcademicQtrKeyId, "CBLR" AS TypeOfParticipationX
-	FROM hip_input
-	WHERE CBLR <> "" AND Internship = "" AND UndergradResearch = ""
-	UNION ALL
-	SELECT CurriculumCode, CourseNbr, CourseSectionId, CourseorProgramName, AcademicQtrKeyId, "CBLR/Internship"
-	FROM hip_input
-	WHERE CBLR <> "" AND Internship <> ""
-	UNION ALL
-	SELECT CurriculumCode, CourseNbr, CourseSectionId, CourseorProgramName, AcademicQtrKeyId, "CBLR/Undergrad Research"
-	FROM hip_input
-	WHERE CBLR <> "" AND UndergradResearch <> ""
-	UNION ALL
-	SELECT CurriculumCode, CourseNbr, CourseSectionId, CourseorProgramName, AcademicQtrKeyId, "COIL"
-	FROM hip_input
-	WHERE GlobalLearning = "COIL"
-	UNION ALL
-	SELECT CurriculumCode, CourseNbr, CourseSectionId, CourseorProgramName, AcademicQtrKeyId, "Global Scholars"
-	FROM hip_input
-	WHERE GlobalLearning = "Global Scholars"
-	UNION ALL
-	SELECT CurriculumCode, CourseNbr, CourseSectionId, CourseorProgramName, AcademicQtrKeyId, "Internship"
-	FROM hip_input
-	WHERE Internship <> "" AND CBLR = ""
-	UNION ALL
-	SELECT CurriculumCode, CourseNbr, CourseSectionId, CourseorProgramName, AcademicQtrKeyId, "Study Abroad"
-	FROM hip_input
-	WHERE GlobalLearning = "Study Abroad"
-	UNION ALL
-	SELECT CurriculumCode, CourseNbr, CourseSectionId, CourseorProgramName, AcademicQtrKeyId, "Learning Community"
-	FROM hip_input
-	WHERE LearningCommunity <> "" AND LearningCommunity <> 'N/A'
-	UNION ALL
-	SELECT CurriculumCode, CourseNbr, CourseSectionId, CourseorProgramName, AcademicQtrKeyId, "Undergrad Research"
-	FROM hip_input
-	WHERE UndergradResearch <> "" AND CBLR = "") AS hip_courses
-ON TRIM(all_courses.CurriculumCode) = hip_courses.CurriculumCode AND all_courses.CourseNbr = hip_courses.CourseNbr AND TRIM(all_courses.CourseSectionId) = hip_courses.CourseSectionId AND all_courses.AcademicQtrKeyId = hip_courses.AcademicQtrKeyId
+INNER JOIN hip_input
+ON TRIM(all_courses.CurriculumCode) = hip_input.CurriculumCode AND all_courses.CourseNbr = hip_input.CourseNbr AND TRIM(all_courses.CourseSectionId) = hip_input.CourseSectionId AND all_courses.AcademicQtrKeyId = hip_input.AcademicQtrKeyId
 ;
 #SELECT * FROM student_participation;
 
@@ -233,12 +202,39 @@ CREATE TABLE output (
     CourseSectionId VARCHAR(3),
     CourseLongName VARCHAR(120),
     SCHQty DECIMAL(3, 1),
-    TypeOfParticipation VARCHAR(200)
+	CBLR VARCHAR(120), #from hip_participation_data
+	Internship VARCHAR(25), #from hip_participation_data
+	GlobalLearning VARCHAR(25), #from hip_participation_data
+	LearningCommunity VARCHAR(25), #from hip_participation_data
+	UndergradResearch VARCHAR(25) #from hip_participation_data
 );
 
 INSERT INTO output
-SELECT student_no, RandomId, student_participation.AcademicQtrKeyId, FirstGenerationMatriculated, FirstGeneration4YrDegree, AcademicCareerEntryType, Veteran, PellEligibilityStatus, AcademicYrName, StudentClassDesc, GenderCode, RaceEthnicityCategory, MajorFullName, MajorAbbrCode, CourseorProgramName, CourseSectionId, CourseLongName, SCHQty, TypeOfParticipation
+SELECT 
+	student_no, 
+    RandomId, 
+    student_participation.AcademicQtrKeyId, 
+    FirstGenerationMatriculated, 
+    FirstGeneration4YrDegree, 
+    AcademicCareerEntryType, 
+    Veteran, 
+    PellEligibilityStatus, 
+    AcademicYrName, 
+    StudentClassDesc, 
+    GenderCode, 
+    RaceEthnicityCategory, 
+    MajorFullName, 
+    MajorAbbrCode, 
+    CourseorProgramName, 
+    CourseSectionId, 
+    CourseLongName, 
+    SCHQty, 
+    CBLR, 
+    Internship, 
+    GlobalLearning, 
+    LearningCommunity, 
+    UndergradResearch
 FROM student_participation
 INNER JOIN student_profile
 ON student_participation.StudentKeyId = student_profile.StudentKeyId AND student_participation.AcademicQtrKeyId = student_profile.AcademicQtrKeyId;
-SELECT * FROM output;
+#SELECT * FROM output;
