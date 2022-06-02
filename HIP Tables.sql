@@ -42,6 +42,8 @@ CREATE TABLE student_participation (
 	StudentKeyId INT,
 	CurriculumCourseKeyId INT NOT NULL,
     CourseLongName VARCHAR(120),
+    CurriculumCode VARCHAR(6),
+    CourseNbr SMALLINT,
     CourseSectionId VARCHAR(3),
     CourseorProgramName VARCHAR(100), 
     AcademicQtrKeyId INT,
@@ -58,7 +60,7 @@ CREATE TABLE student_participation (
 
 -- fill student_participation table
 INSERT INTO student_participation
-SELECT  StudentKeyId, CurriculumCourseKeyId, CourseLongName, all_courses.CourseSectionId, CourseorProgramName, all_courses.AcademicQtrKeyId, AcademicYrName, SCHQty, CBLR,	Internship, GlobalLearning, LearningCommunity, UndergradResearch
+SELECT  StudentKeyId, CurriculumCourseKeyId, CourseLongName, all_courses.CurriculumCode, all_courses.CourseNbr, all_courses.CourseSectionId, CourseorProgramName, all_courses.AcademicQtrKeyId, AcademicYrName, SCHQty, CBLR,	Internship, GlobalLearning, LearningCommunity, UndergradResearch
 FROM
 	(SELECT CurrCourse.CurriculumCourseKeyId, CurriculumCode, CourseNbr, CourseLongName, StudentKeyId, CourseSectionId, SCHQty, AcademicQtrKeyId, AcademicYrName
 	FROM 
@@ -73,10 +75,10 @@ FROM
 			WHERE AcademicQtrCensusDayInd = 'Y') AS date_query
 		ON enterprise_data_warehouse.factStudentCreditHour.CalendarDateKeyId = date_query.CalendarDateKeyId) AS date_student
 	ON CurrCourse.CurriculumCourseKeyId = date_student.CurriculumCourseKeyId) AS all_courses
-INNER JOIN hip_input
+INNER JOIN hip_input #change to LEFT JOIN to select all courses at UW
 ON TRIM(all_courses.CurriculumCode) = hip_input.CurriculumCode AND all_courses.CourseNbr = hip_input.CourseNbr AND TRIM(all_courses.CourseSectionId) = hip_input.CourseSectionId AND all_courses.AcademicQtrKeyId = hip_input.AcademicQtrKeyId
 ;
-#SELECT * FROM student_participation;
+SELECT * FROM student_participation;
 
 -- Converts student identification information from EDW and SDB into a non-personalized ID value. The purpose is to mask personally identifiable information regarding students in the database.
 CREATE TABLE student_alias (
@@ -123,7 +125,7 @@ INNER JOIN
 		FROM
 			(SELECT StudentKeyId, SDBSrcSystemKey, GenderCode,  StudentClassDesc, "Hispanic" AS RaceEthnicityCategory
 			FROM enterprise_data_warehouse.dimStudent
-			WHERE HispanicInd = 'Y' AND EthnicGrpMultipleInd <> 'Y'
+			WHERE HispanicInd = 'Y' AND EthnicGrpMultipleInd <> 'Y' #hispanic AND not multiple
 			UNION ALL
 			SELECT StudentKeyId, SDBSrcSystemKey, GenderCode,  StudentClassDesc, "African American"
 			FROM enterprise_data_warehouse.dimStudent
@@ -182,24 +184,41 @@ ON uwb_hip.student_alias.system_key = student_info.SDBSrcSystemKey
 ;
 #SELECT * FROM student_profile;
 
+CREATE TABLE sdb_veteran_code(
+	Veteran SMALLINT,
+    veteran_descrip VARCHAR(50)
+);
+
+-- Insert values into hip_participation_data table from CSV
+LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/VeteransTable.csv'
+IGNORE
+INTO TABLE sdb_veteran_code
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+;
+SELECT * FROM sdb_veteran_code;
 
 CREATE TABLE output (
 	student_no INT,
     RandomId INT,
+    AcademicYrName VARCHAR(50),
     AcademicQtrKeyId INT,
     FirstGenerationMatriculated CHAR(1),
 	FirstGeneration4YrDegree CHAR(1),
 	AcademicCareerEntryType VARCHAR(100),
-    Veteran SMALLINT,
+    veteran_descrip VARCHAR(50),
     PellEligibilityStatus VARCHAR(100),
-    AcademicYrName VARCHAR(50),
-    StudentClassDesc VARCHAR(100),
     GenderCode VARCHAR(10),
     RaceEthnicityCategory VARCHAR(100),
+    StudentClassDesc VARCHAR(100),
     MajorFullName VARCHAR(100),
     MajorAbbrCode VARCHAR(10),
-    CourseorProgramName VARCHAR(100),
+    CurriculumCode VARCHAR(6),
+    CourseNbr SMALLINT,
     CourseSectionId VARCHAR(3),
+    CourseorProgramName VARCHAR(100),
     CourseLongName VARCHAR(120),
     SCHQty DECIMAL(3, 1),
 	CBLR VARCHAR(120), #from hip_participation_data
@@ -213,20 +232,22 @@ INSERT INTO output
 SELECT 
 	student_no, 
     RandomId, 
+    AcademicYrName, 
     student_participation.AcademicQtrKeyId, 
     FirstGenerationMatriculated, 
     FirstGeneration4YrDegree, 
     AcademicCareerEntryType, 
-    Veteran, 
+    veteran_descrip, 
     PellEligibilityStatus, 
-    AcademicYrName, 
-    StudentClassDesc, 
     GenderCode, 
     RaceEthnicityCategory, 
+    StudentClassDesc, 
     MajorFullName, 
     MajorAbbrCode, 
-    CourseorProgramName, 
+    CurriculumCode,
+    CourseNbr,
     CourseSectionId, 
+    CourseorProgramName, 
     CourseLongName, 
     SCHQty, 
     CBLR, 
@@ -235,6 +256,12 @@ SELECT
     LearningCommunity, 
     UndergradResearch
 FROM student_participation
-INNER JOIN student_profile
-ON student_participation.StudentKeyId = student_profile.StudentKeyId AND student_participation.AcademicQtrKeyId = student_profile.AcademicQtrKeyId;
-#SELECT * FROM output;
+INNER JOIN 
+	(SELECT RandomId, StudentKeyId, student_no, AcademicQtrKeyId, FirstGenerationMatriculated, FirstGeneration4YrDegree, AcademicCareerEntryType, veteran_descrip, PellEligibilityStatus, StudentClassDesc, GenderCode, RaceEthnicityCategory, MajorFullName, MajorAbbrCode
+    FROM student_profile
+    INNER JOIN sdb_veteran_code
+    ON student_profile.Veteran = sdb_veteran_code.Veteran) AS s_profile_1
+ON student_participation.StudentKeyId = s_profile_1.StudentKeyId AND student_participation.AcademicQtrKeyId = s_profile_1.AcademicQtrKeyId;
+SELECT * FROM output;
+
+DROP TABLE output;
